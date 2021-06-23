@@ -19,6 +19,7 @@ namespace Elevator.Test
             var subjectUnderTest = new Car();
 
             Assert.Equal(DirectionOfTravel.STAIONARY, subjectUnderTest.DirectionOfTravel);
+            Assert.False(subjectUnderTest.Moving);
         }
     }
 }

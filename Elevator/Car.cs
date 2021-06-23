@@ -10,6 +10,7 @@ namespace Elevator
     {
         public DirectionOfTravel DirectionOfTravel { get; set; }
         public List<int> FloorQueue { get; set; }
+        public bool Moving { get; set; } = false;
 
         public Car()
         {
