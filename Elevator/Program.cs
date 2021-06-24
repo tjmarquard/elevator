@@ -4,22 +4,29 @@ namespace Elevator
 {
     class Program
     {
+        
         static void Main(string[] args)
         {
-            var numberOfFloors = PromptHowManyFloors();
+            var numberOfFloors= EnterHowManyFloors();
+            var elevator = new Elevator(numberOfFloors);
+            elevator.Run();
 
-            int floors;
+            Console.WriteLine($"The elevator has served all floors and shutdown.");
+        }
 
-            while (!Int32.TryParse(numberOfFloors, out floors))
+        private static int EnterHowManyFloors()
+        {
+            var userEnteredValue = PromptHowManyFloors();
+
+            int numberOfFloors;
+
+            while (!Int32.TryParse(userEnteredValue, out numberOfFloors))
             {
                 Console.WriteLine("An invalid value was entered");
-                numberOfFloors = PromptHowManyFloors();
+                userEnteredValue = PromptHowManyFloors();
             }
 
-            var car = new Car(floors);
-            Console.WriteLine($"It serves {floors} floors.");
-
-
+            return numberOfFloors;
         }
 
         private static string PromptHowManyFloors()

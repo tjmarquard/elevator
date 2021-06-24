@@ -27,5 +27,24 @@ namespace Elevator
             DirectionOfTravel = DirectionOfTravel.STAIONARY;
             Floors = Enumerable.Range(1, numberOfFloors).ToList();
         }
+
+        public async void MovingToNextFloor()
+        {
+            await Task.Delay(3 * 1000);
+
+            switch (DirectionOfTravel)
+            {
+                case DirectionOfTravel.DOWN:
+                    CurrentFloor = CurrentFloor - 1;
+                    break;
+                case DirectionOfTravel.UP:
+                    CurrentFloor = CurrentFloor + 1;
+                    break;
+                case DirectionOfTravel.STAIONARY:
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
