@@ -80,8 +80,13 @@ namespace Elevator
 
         public string GetEnteredDirectionOfTravel(string value)
         {
-            var values = Regex.Split(value, @"/[UDQ]/");
-            return values.FirstOrDefault();
+            var validChars = Regex.Replace(value.ToUpperInvariant(), @"[^ UDQ]", String.Empty);
+
+            if (validChars.Length > 0)
+            {
+                return validChars[0].ToString();
+            }
+            return "";
         }
     }
 }

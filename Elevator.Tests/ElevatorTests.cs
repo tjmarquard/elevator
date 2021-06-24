@@ -56,7 +56,9 @@ namespace Elevator.Tests
         [InlineData("5D", "D")]
         [InlineData("4U", "U")]
         [InlineData("Q", "Q")]
-        [InlineData("2B", "B")]
+        [InlineData("2B", "")]
+        [InlineData("2", "")]
+        [InlineData("2u", "U")]
         public void EnteredDirectionOfTravelShouldBeValid(string enteredButton, string expectedDirection)
         {
             var subjectUnderTest = new Elevator(5);
