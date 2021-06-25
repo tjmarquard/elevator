@@ -15,7 +15,8 @@ namespace Elevator
         public State State { get; set; } = State.STOPPED;
         public List<int> Floors { get; private set; }
         public int CurrentFloor { get; set; } = 1;
-        public int NextFloor { get; set; } = 1;
+        public int DestinationFloor { get; set; } = 1;
+        public int NextFloor { get; set; }
         public int MaxWeightLimit { get; } = 2000;
         public int Weight { get; set; }
         public bool IsUnderMaxWeightLimit
@@ -52,7 +53,7 @@ namespace Elevator
             Console.WriteLine($"Current Direction: {DirectionOfTravel}");
             if (IsMoving)
             {
-                Console.WriteLine($"Next Floor: {NextFloor}");
+                Console.WriteLine($"Next Floor: {DestinationFloor}");
             }
             else
             {
@@ -64,13 +65,23 @@ namespace Elevator
 
         public void MoveToNextFloor()
         {
+            QuerySensor();
+
             IsMoving = true;
             Task.Delay(3 * 1000);
             IsMoving = false;
+            CurrentFloor = NextFloor;
+            if (CurrentFloor == DestinationFloor)
+            {
+                WaitAtCurrentFloor();
+            }
+
+            QuerySensor();
         }
 
         public void WaitAtCurrentFloor()
         {
+            RemoveFloorFromQueue();
             Task.Delay(1 * 1000);
         }
 
@@ -90,29 +101,59 @@ namespace Elevator
             }
         }
 
-        public void Move()
+        public void DestinationFloorAndDirection()
         {
+            if (FloorQueue.Count == 0)
+            {
+                return;
+            }
+
             //Do I need to move up or down
+            var nextFloorUp = FloorQueue
+                                .Where(floor => 
+                                    floor.Item1 > CurrentFloor
+                                    && (floor.Item2 == DirectionOfTravel.NONE
+                                        || floor.Item2 == DirectionOfTravel.UP))
+                                .OrderBy(floor => floor)
+                                .FirstOrDefault();
+            var nextFloorDown = FloorQueue
+                                .Where(floor =>
+                                    floor.Item1 < CurrentFloor
+                                    && (floor.Item2 == DirectionOfTravel.NONE
+                                        || floor.Item2 == DirectionOfTravel.DOWN))
+                                .OrderByDescending(floor => floor)
+                                .FirstOrDefault();
+
+
             if (DirectionOfTravel == DirectionOfTravel.UP)
             {
-                var nextFloorUp = FloorQueue
-                                    .Where(floor => 
-                                        floor.Item1 > CurrentFloor
-                                        && (floor.Item2 == DirectionOfTravel.NONE
-                                            || floor.Item2 == DirectionOfTravel.UP))
-                                    .OrderBy(floor => floor)
-                                    .FirstOrDefault();
+                DestinationFloor = nextFloorUp.Item1;
             }
-            if (DirectionOfTravel == DirectionOfTravel.DOWN)
+            else if (DirectionOfTravel == DirectionOfTravel.DOWN)
             {
-                var nextFloorDown = FloorQueue
-                                    .Where(floor =>
-                                        floor.Item1 < CurrentFloor
-                                        && (floor.Item2 == DirectionOfTravel.NONE
-                                            || floor.Item2 == DirectionOfTravel.DOWN))
-                                    .OrderByDescending(floor => floor)
-                                    .FirstOrDefault();
+                DestinationFloor = nextFloorDown.Item1;
             }
+            else if (DirectionOfTravel == DirectionOfTravel.NONE)
+            {
+                var minDistance = FloorQueue.Min(floor => Math.Abs(floor.Item1 - CurrentFloor));
+                DestinationFloor = FloorQueue.Select(floor => floor.Item1)
+                    .First(level => Math.Abs(level - CurrentFloor) == minDistance);
+                if (DestinationFloor > CurrentFloor)
+                {
+                    DirectionOfTravel = DirectionOfTravel.UP;
+                }
+                else
+                {
+                    DirectionOfTravel = DirectionOfTravel.DOWN;
+                }
+            }
+
+        }
+
+        public void RemoveFloorFromQueue()
+        {
+            FloorQueue.Remove((CurrentFloor, DirectionOfTravel));
+            FloorQueue.Remove((CurrentFloor, DirectionOfTravel.NONE));
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace Elevator
 {
@@ -23,6 +24,8 @@ namespace Elevator
         }
         public bool QuitFlag { get; set; } = false;
 
+        private System.ComponentModel.BackgroundWorker backgroundWorker;
+
         public Elevator(int numberOfFloors)
         {
             Car = new Car(numberOfFloors);
@@ -33,6 +36,9 @@ namespace Elevator
                 var floor = new Floor(floorNumber);
                 Floors.Add(floor);
             }
+
+            this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
+            InitializeBackgroundWorker();
         }
 
         public void Run()
@@ -108,6 +114,23 @@ namespace Elevator
                 default:
                     return DirectionOfTravel.NONE;
             }
+        }
+
+        private void InitializeBackgroundWorker()
+        {
+            backgroundWorker.DoWork += new DoWorkEventHandler(ProcessFloorQueue);
+        }
+
+        public void ProcessFloorQueue(object sender, DoWorkEventArgs doWorkEventArgs)
+        {
+            while (!QuitFlag.Equals("Q"))
+            {
+                Car.DestinationFloorAndDirection();
+                Car.SetNextFloor();
+                Car.MoveToNextFloor();
+            }
+
+            System.Environment.Exit(0);
         }
     }
 }
