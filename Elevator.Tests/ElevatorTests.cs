@@ -53,13 +53,12 @@ namespace Elevator.Tests
         }       
         
         [Theory]
-        [InlineData("5D", "D")]
-        [InlineData("4U", "U")]
-        [InlineData("Q", "Q")]
-        [InlineData("2B", "")]
-        [InlineData("2", "")]
-        [InlineData("2u", "U")]
-        public void EnteredDirectionOfTravelShouldBeValid(string enteredButton, string expectedDirection)
+        [InlineData("5D", DirectionOfTravel.DOWN)]
+        [InlineData("4U", DirectionOfTravel.UP)]
+        [InlineData("2B", DirectionOfTravel.NONE)]
+        [InlineData("2", DirectionOfTravel.NONE)]
+        [InlineData("2u", DirectionOfTravel.UP)]
+        public void EnteredDirectionOfTravelShouldBeValid(string enteredButton, DirectionOfTravel expectedDirection)
         {
             var subjectUnderTest = new Elevator(5);
             var actualDirection = subjectUnderTest.GetEnteredDirectionOfTravel(enteredButton);

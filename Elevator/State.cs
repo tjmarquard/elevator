@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Elevator
 {
-    public enum DirectionOfTravel
+    public enum State
     {
-        DOWN,
-        UP,
-        NONE
+        MOVING,
+        STOPPED
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace Elevator
 {
@@ -11,6 +13,7 @@ namespace Elevator
     {
         public Car Car { get; set; }
         public List<Floor> Floors { get; set; }
+
         public int TopFloor
         {
             get
@@ -18,8 +21,7 @@ namespace Elevator
                 return Floors.Select(floor => floor.Number).Max();
             }
         }
-
-        public Dictionary<int, DirectionOfTravel> Requests { get; set; }
+        public bool QuitFlag { get; set; } = false;
 
         public Elevator(int numberOfFloors)
         {
@@ -35,7 +37,10 @@ namespace Elevator
 
         public void Run()
         {
-
+            while (!QuitFlag)
+            {
+                PushButtons();
+            }
         }
 
         private void PushButtons()
@@ -48,7 +53,10 @@ namespace Elevator
                 enteredValue = PushButtonPrompt();
             }
 
+            var floorNumber = GetEnteredFloorNumber(enteredValue);
+            var directionOfTravel = GetEnteredDirectionOfTravel(enteredValue);
 
+            Car.FloorQueue.Add((floorNumber, directionOfTravel));
         }
 
         private string PushButtonPrompt()
@@ -78,15 +86,28 @@ namespace Elevator
             return floorNumber;
         }
 
-        public string GetEnteredDirectionOfTravel(string value)
+        public DirectionOfTravel GetEnteredDirectionOfTravel(string value)
         {
             var validChars = Regex.Replace(value.ToUpperInvariant(), @"[^ UDQ]", String.Empty);
 
-            if (validChars.Length > 0)
+
+            if (validChars.Length == 0)
             {
-                return validChars[0].ToString();
+                return DirectionOfTravel.NONE;
             }
-            return "";
+
+            switch (validChars[0])
+            {
+                case 'U':
+                    return DirectionOfTravel.UP;
+                case 'D':
+                    return DirectionOfTravel.DOWN;
+                case 'Q':
+                    QuitFlag = true;
+                    return DirectionOfTravel.NONE;
+                default:
+                    return DirectionOfTravel.NONE;
+            }
         }
     }
 }

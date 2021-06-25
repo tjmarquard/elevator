@@ -18,8 +18,8 @@ namespace Elevator.Test
         {
             var subjectUnderTest = new Car(5);
 
-            Assert.Equal(DirectionOfTravel.STAIONARY, subjectUnderTest.DirectionOfTravel);
-            Assert.False(subjectUnderTest.Moving);
+            Assert.Equal(DirectionOfTravel.NONE, subjectUnderTest.DirectionOfTravel);
+            Assert.False(subjectUnderTest.IsMoving);
         }
 
         [Fact]
