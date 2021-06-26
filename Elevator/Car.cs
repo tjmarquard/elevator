@@ -10,11 +10,10 @@
     {
         private readonly ILogger logger;
 
-        public Car(int numberOfFloors, ILogger logger)
+        public Car(ILogger logger)
         {
             this.logger = logger;
             ButtonPresses = new List<ButtonPress>();
-            Floors = Enumerable.Range(1, numberOfFloors).ToList();
         }
 
         public DirectionOfTravel DirectionOfTravel { get; set; } = DirectionOfTravel.NONE;
@@ -30,8 +29,6 @@
         public State State { get; set; } = State.STOPPED;
 
         public bool IsInService { get; set; } = false;
-
-        public List<int> Floors { get; private set; }
 
         public int CurrentFloor { get; set; } = 1;
 

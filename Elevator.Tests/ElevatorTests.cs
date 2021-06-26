@@ -9,13 +9,13 @@
         {
             var subjectUnderTest = new Elevator(5);
 
-            Assert.Collection<Floor>(
+            Assert.Collection<int>(
                 subjectUnderTest.FloorNumbers,
-                floor => Assert.Equal(1, floor.Number),
-                floor => Assert.Equal(2, floor.Number),
-                floor => Assert.Equal(3, floor.Number),
-                floor => Assert.Equal(4, floor.Number),
-                floor => Assert.Equal(5, floor.Number));
+                floorNumber => Assert.Equal(1, floorNumber),
+                floorNumber => Assert.Equal(2, floorNumber),
+                floorNumber => Assert.Equal(3, floorNumber),
+                floorNumber => Assert.Equal(4, floorNumber),
+                floorNumber => Assert.Equal(5, floorNumber));
         }
 
         [Theory]
@@ -30,7 +30,6 @@
         [InlineData("D3", 3)]
         public void GetEnteredFloorNumberShouldBeValid(string enteredButton, int expectedFloorNumber)
         {
-            var subjectUnderTest = new Elevator(5);
             var actualFloorNumber = Elevator.GetEnteredFloorNumber(enteredButton);
 
             Assert.Equal(expectedFloorNumber, actualFloorNumber);
@@ -40,7 +39,6 @@
         [InlineData("D", 0)]
         public void GetEnteredFloorNumberShouldBeInvalid(string enteredButton, int expectedFloorNumber)
         {
-            var subjectUnderTest = new Elevator(5);
             var actualFloorNumber = Elevator.GetEnteredFloorNumber(enteredButton);
 
             Assert.Equal(expectedFloorNumber, actualFloorNumber);
@@ -71,7 +69,7 @@
                 FloorNumber = 2,
                 DirectionOfTravel = DirectionOfTravel.DOWN,
             };
-            var ButtonPress2Up = new ButtonPress()
+            var buttonPress2Up = new ButtonPress()
             {
                 FloorNumber = 2,
                 DirectionOfTravel = DirectionOfTravel.UP,
@@ -83,7 +81,7 @@
             };
 
             subjectUnderTest.Car.ButtonPresses.Add(buttonPress2Down);
-            subjectUnderTest.Car.ButtonPresses.Add(ButtonPress2Up);
+            subjectUnderTest.Car.ButtonPresses.Add(buttonPress2Up);
             subjectUnderTest.Car.ButtonPresses.Add(buttonPress3None);
 
             await subjectUnderTest.ProcessButtonPresses();

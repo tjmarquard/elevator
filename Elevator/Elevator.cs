@@ -19,7 +19,7 @@
                 .WriteTo.File("logs/elevator.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
-            Car = new Car(numberOfFloors, logger);
+            Car = new Car(logger);
             FloorNumbers = Enumerable.Range(1, numberOfFloors).ToList();
         }
 
@@ -111,7 +111,7 @@
         private async Task<string> PushButtonPrompt()
         {
             Console.WriteLine("Which button in the elevator car was pushed?");
-            
+
             var userEnteredValue = Console.ReadLine();
 
             if (userEnteredValue.ToUpperInvariant() == "Q")
@@ -159,8 +159,6 @@
             {
                 ProcessButtonPresses();
             }
-
-
         }
     }
 }

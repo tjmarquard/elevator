@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
-		<CodeAnalysisRuleSet>../Elevator/stylecop.xml</CodeAnalysisRuleSet>
+		<CodeAnalysisRuleSet>..\Elevator\stylecop.xml</CodeAnalysisRuleSet>
 		<IsPackable>false</IsPackable>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>

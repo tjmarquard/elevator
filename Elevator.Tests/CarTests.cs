@@ -19,7 +19,7 @@ namespace Elevator.Tests
         [Fact]
         public void ElevatorShouldStartWithAnEmptyFloorQueue()
         {
-            var subjectUnderTest = new Car(5, logger);
+            var subjectUnderTest = new Car(logger);
 
             Assert.Empty(subjectUnderTest.ButtonPresses);
         }
@@ -27,30 +27,16 @@ namespace Elevator.Tests
         [Fact]
         public void CarShouldStartStaionary()
         {
-            var subjectUnderTest = new Car(5, logger);
+            var subjectUnderTest = new Car(logger);
 
             Assert.Equal(DirectionOfTravel.NONE, subjectUnderTest.DirectionOfTravel);
             Assert.False(subjectUnderTest.IsMoving);
         }
 
         [Fact]
-        public void CarShouldHaveFiveFloors()
-        {
-            var subjectUnderTest = new Car(5, logger);
-
-            Assert.Collection<int>(
-                subjectUnderTest.Floors,
-                floor => Assert.Equal(1, floor),
-                floor => Assert.Equal(2, floor),
-                floor => Assert.Equal(3, floor),
-                floor => Assert.Equal(4, floor),
-                floor => Assert.Equal(5, floor));
-        }
-
-        [Fact]
         public void CarShouldStartOnFirstFloor()
         {
-            var subjectUnderTest = new Car(5, logger);
+            var subjectUnderTest = new Car(logger);
 
             Assert.Equal(1, subjectUnderTest.CurrentFloor);
         }
@@ -58,7 +44,7 @@ namespace Elevator.Tests
         [Fact]
         public void CarHasAMaxWeightLimitOf2000()
         {
-            var subjectUnderTest = new Car(5, logger);
+            var subjectUnderTest = new Car(logger);
 
             Assert.Equal(2000, subjectUnderTest.MaxWeightLimit);
         }
@@ -66,7 +52,7 @@ namespace Elevator.Tests
         [Fact]
         public void CarIsUnderMaxWeightLimit()
         {
-            var subjectUnderTest = new Car(5, logger);
+            var subjectUnderTest = new Car(logger);
 
             subjectUnderTest.Weight = subjectUnderTest.MaxWeightLimit - 1;
 
@@ -76,7 +62,7 @@ namespace Elevator.Tests
         [Fact]
         public void CarIsOverMaxWeightLimit()
         {
-            var subjectUnderTest = new Car(5, logger);
+            var subjectUnderTest = new Car(logger);
 
             subjectUnderTest.Weight = subjectUnderTest.MaxWeightLimit + 1;
 
@@ -86,7 +72,7 @@ namespace Elevator.Tests
         [Fact]
         public void CarIsAtMaxWeightLimit()
         {
-            var subjectUnderTest = new Car(5, logger);
+            var subjectUnderTest = new Car(logger);
 
             subjectUnderTest.Weight = subjectUnderTest.MaxWeightLimit;
 
