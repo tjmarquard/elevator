@@ -13,6 +13,7 @@ namespace Elevator
         public DirectionOfTravel DirectionOfTravel { get; set; } = DirectionOfTravel.NONE;
         public bool IsMoving { get; set; } = false;
         public State State { get; set; } = State.STOPPED;
+        public bool IsInService { get; set; } = false;
         public List<int> Floors { get; private set; }
         public int CurrentFloor { get; set; } = 1;
         public int DestinationFloor { get; set; } = 1;
@@ -27,24 +28,12 @@ namespace Elevator
         {
             get => Weight > MaxWeightLimit;
         }
-        public ObservableCollection<(int, DirectionOfTravel)> FloorQueue { get; set; }
+        public List<ButtonPress> ButtonPresses { get; set; }
 
         public Car(int numberOfFloors)
         {
-            FloorQueue = new ObservableCollection<(int, DirectionOfTravel)>();
-            FloorQueue.CollectionChanged += HandleChange;
-
+            ButtonPresses = new List<ButtonPress>();
             Floors = Enumerable.Range(1, numberOfFloors).ToList();
-        }
-
-        private async void HandleChange(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            QuerySensor();
-
-            SetNextFloor();
-
-            await Task.Delay(3 * 1000);
-            Console.WriteLine("added");
         }
 
         private void QuerySensor()
@@ -63,12 +52,12 @@ namespace Elevator
             Console.WriteLine($"Over weight limit: {IsOverMaxWeightLimit}");
         }
 
-        public void MoveToNextFloor()
+        public async Task MoveToNextFloor()
         {
             QuerySensor();
 
             IsMoving = true;
-            Task.Delay(3 * 1000);
+            await Task.Delay(3 * 1000);
             IsMoving = false;
             CurrentFloor = NextFloor;
             if (CurrentFloor == DestinationFloor)
@@ -82,7 +71,8 @@ namespace Elevator
         public void WaitAtCurrentFloor()
         {
             RemoveFloorFromQueue();
-            Task.Delay(1 * 1000);
+            Console.WriteLine("quick stop");
+            System.Threading.Thread.Sleep(1 * 1000);
         }
 
         public void SetNextFloor()
@@ -103,41 +93,41 @@ namespace Elevator
 
         public void DestinationFloorAndDirection()
         {
-            if (FloorQueue.Count == 0)
+            if (ButtonPresses.Count == 0)
             {
                 return;
             }
 
             //Do I need to move up or down
-            var nextFloorUp = FloorQueue
-                                .Where(floor => 
-                                    floor.Item1 > CurrentFloor
-                                    && (floor.Item2 == DirectionOfTravel.NONE
-                                        || floor.Item2 == DirectionOfTravel.UP))
+            var nextFloorUp = ButtonPresses
+                                .Where(buttonPress => 
+                                    buttonPress.FloorNumber > CurrentFloor
+                                    && (buttonPress.DirectionOfTravel == DirectionOfTravel.NONE
+                                        || buttonPress.DirectionOfTravel == DirectionOfTravel.UP))
                                 .OrderBy(floor => floor)
                                 .FirstOrDefault();
-            var nextFloorDown = FloorQueue
-                                .Where(floor =>
-                                    floor.Item1 < CurrentFloor
-                                    && (floor.Item2 == DirectionOfTravel.NONE
-                                        || floor.Item2 == DirectionOfTravel.DOWN))
+            var nextFloorDown = ButtonPresses
+                                .Where(buttonPress =>
+                                    buttonPress.FloorNumber < CurrentFloor
+                                    && (buttonPress.DirectionOfTravel == DirectionOfTravel.NONE
+                                        || buttonPress.DirectionOfTravel == DirectionOfTravel.DOWN))
                                 .OrderByDescending(floor => floor)
                                 .FirstOrDefault();
 
 
-            if (DirectionOfTravel == DirectionOfTravel.UP)
+            if (nextFloorUp != null && DirectionOfTravel == DirectionOfTravel.UP)
             {
-                DestinationFloor = nextFloorUp.Item1;
+                DestinationFloor = nextFloorUp.FloorNumber;
             }
-            else if (DirectionOfTravel == DirectionOfTravel.DOWN)
+            else if (nextFloorDown != null && DirectionOfTravel == DirectionOfTravel.DOWN)
             {
-                DestinationFloor = nextFloorDown.Item1;
+                DestinationFloor = nextFloorDown.FloorNumber;
             }
-            else if (DirectionOfTravel == DirectionOfTravel.NONE)
+            else
             {
-                var minDistance = FloorQueue.Min(floor => Math.Abs(floor.Item1 - CurrentFloor));
-                DestinationFloor = FloorQueue.Select(floor => floor.Item1)
-                    .First(level => Math.Abs(level - CurrentFloor) == minDistance);
+                var minDistance = ButtonPresses.Min(buttonPress => Math.Abs(buttonPress.FloorNumber - CurrentFloor));
+                DestinationFloor = ButtonPresses.Select(buttonPress => buttonPress.FloorNumber)
+                    .First(floorNumber => Math.Abs(floorNumber - CurrentFloor) == minDistance);
                 if (DestinationFloor > CurrentFloor)
                 {
                     DirectionOfTravel = DirectionOfTravel.UP;
@@ -147,13 +137,12 @@ namespace Elevator
                     DirectionOfTravel = DirectionOfTravel.DOWN;
                 }
             }
-
         }
 
         public void RemoveFloorFromQueue()
         {
-            FloorQueue.Remove((CurrentFloor, DirectionOfTravel));
-            FloorQueue.Remove((CurrentFloor, DirectionOfTravel.NONE));
+            ButtonPresses.RemoveAll(buttonPress => buttonPress.FloorNumber == CurrentFloor && buttonPress.DirectionOfTravel == DirectionOfTravel);
+            ButtonPresses.RemoveAll(buttonPress => buttonPress.FloorNumber == CurrentFloor && buttonPress.DirectionOfTravel == DirectionOfTravel.NONE);
         }
     }
 }

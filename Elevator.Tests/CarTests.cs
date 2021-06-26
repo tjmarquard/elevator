@@ -10,7 +10,7 @@ namespace Elevator.Test
         {
             var subjectUnderTest = new Car(5);
 
-            Assert.Empty(subjectUnderTest.FloorQueue);
+            Assert.Empty(subjectUnderTest.ButtonPresses);
         }
 
         [Fact]

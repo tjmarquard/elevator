@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Threading.Tasks;
+using NLog;
 
 namespace Elevator
 {
@@ -14,6 +12,7 @@ namespace Elevator
     {
         public Car Car { get; set; }
         public List<Floor> Floors { get; set; }
+        public Logger Logger { get; set; }
 
         public int TopFloor
         {
@@ -37,8 +36,7 @@ namespace Elevator
                 Floors.Add(floor);
             }
 
-            this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
-            InitializeBackgroundWorker();
+            Logger = LogManager.GetLogger("*");
         }
 
         public void Run()
@@ -62,7 +60,13 @@ namespace Elevator
             var floorNumber = GetEnteredFloorNumber(enteredValue);
             var directionOfTravel = GetEnteredDirectionOfTravel(enteredValue);
 
-            Car.FloorQueue.Add((floorNumber, directionOfTravel));
+            Car.ButtonPresses.Add(new ButtonPress 
+            {
+                FloorNumber = floorNumber,
+                DirectionOfTravel = directionOfTravel 
+            });
+
+            ProcessButtonPresses();
         }
 
         private string PushButtonPrompt()
@@ -96,7 +100,6 @@ namespace Elevator
         {
             var validChars = Regex.Replace(value.ToUpperInvariant(), @"[^ UDQ]", String.Empty);
 
-
             if (validChars.Length == 0)
             {
                 return DirectionOfTravel.NONE;
@@ -116,21 +119,18 @@ namespace Elevator
             }
         }
 
-        private void InitializeBackgroundWorker()
+        public async Task ProcessButtonPresses()
         {
-            backgroundWorker.DoWork += new DoWorkEventHandler(ProcessFloorQueue);
-        }
-
-        public void ProcessFloorQueue(object sender, DoWorkEventArgs doWorkEventArgs)
-        {
-            while (!QuitFlag.Equals("Q"))
+            Car.IsInService = true;
+            while (Car.ButtonPresses.Count > 0)
             {
+                Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
+                Logger.Info("hello");
                 Car.DestinationFloorAndDirection();
                 Car.SetNextFloor();
-                Car.MoveToNextFloor();
+                await Car.MoveToNextFloor();
             }
-
-            System.Environment.Exit(0);
+            Car.IsInService = false;
         }
     }
 }
