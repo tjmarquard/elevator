@@ -54,7 +54,8 @@
 
         public async Task MoveToNextFloor()
         {
-            if (DestinationFloor != 0 && DestinationFloor != CurrentFloor) {
+            if (DestinationFloor != 0 && DestinationFloor != CurrentFloor)
+            {
                 State = State.MOVING;
                 await Task.Delay(3 * 1000);
                 CurrentFloor = NextFloor;

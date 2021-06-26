@@ -27,7 +27,7 @@
 
         public List<int> FloorNumbers { get; set; }
 
-        public bool QuitFlag { get; set; } = false;
+        private bool QuitFlag { get; set; } = false;
 
         private int TopFloor
         {
@@ -52,6 +52,8 @@
 
         public void Run()
         {
+            logger.Information("started running the elevator");
+
             while (!QuitFlag)
             {
                 PushButtons();

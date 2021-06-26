@@ -1,5 +1,6 @@
 ﻿namespace Elevator.Tests
 {
+    using System.Threading.Tasks;
     using Xunit;
 
     public class ElevatorTests
@@ -50,6 +51,8 @@
         [InlineData("2B", DirectionOfTravel.NONE)]
         [InlineData("2", DirectionOfTravel.NONE)]
         [InlineData("2u", DirectionOfTravel.UP)]
+        [InlineData("q", DirectionOfTravel.NONE)]
+        [InlineData(" ", DirectionOfTravel.NONE)]
         public void EnteredDirectionOfTravelShouldBeValid(string enteredButton, DirectionOfTravel expectedDirection)
         {
             var subjectUnderTest = new Elevator(5);
@@ -85,6 +88,52 @@
             subjectUnderTest.Car.ButtonPresses.Add(buttonPress3None);
 
             await subjectUnderTest.ProcessButtonPresses();
+
+            Assert.Equal(expectedLastFloor, subjectUnderTest.Car.CurrentFloor);
+        }
+
+        [Theory]
+        [InlineData("1D", true)]
+        [InlineData("2D", true)]
+        [InlineData("2U", true)]
+        [InlineData("2", true)]
+        [InlineData("10", false)]
+        [InlineData("", false)]
+        [InlineData("E", false)]
+        [InlineData("9E", false)]
+        public void CheckForValidButton(string enteredValue, bool expectedValue)
+        {
+            var subjectUnderTest = new Elevator(5);
+            var actualValue = subjectUnderTest.CheckForValidButton(enteredValue);
+            Assert.Equal(expectedValue, actualValue);
+        }
+
+        [Fact]
+        public async void PressButton2WhileMovingBetween1And3ShouldEndOnFloor2()
+        {
+            var subjectUnderTest = new Elevator(3);
+            var expectedLastFloor = 2;
+
+            var buttonPress2None = new ButtonPress()
+            {
+                FloorNumber = 2,
+                DirectionOfTravel = DirectionOfTravel.NONE,
+            };
+            var buttonPress3None = new ButtonPress()
+            {
+                FloorNumber = 3,
+                DirectionOfTravel = DirectionOfTravel.NONE,
+            };
+
+            subjectUnderTest.Car.ButtonPresses.Add(buttonPress3None);
+
+            var button3Task = subjectUnderTest.ProcessButtonPresses();
+
+            await Task.Delay(500);
+
+            subjectUnderTest.Car.ButtonPresses.Add(buttonPress2None);
+
+            await button3Task;
 
             Assert.Equal(expectedLastFloor, subjectUnderTest.Car.CurrentFloor);
         }

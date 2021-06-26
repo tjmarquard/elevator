@@ -9,8 +9,6 @@
             var numberOfFloors = EnterHowManyFloors();
             var elevator = new Elevator(numberOfFloors);
             elevator.Run();
-
-            Console.WriteLine($"The elevator has served all floors and shutdown.");
         }
 
         private static int EnterHowManyFloors()
