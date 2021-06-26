@@ -109,20 +109,8 @@
                 return;
             }
 
-            var nextFloorUp = ButtonPresses
-                                .Where(buttonPress =>
-                                    buttonPress?.FloorNumber > CurrentFloor
-                                    && (buttonPress?.DirectionOfTravel == DirectionOfTravel.NONE
-                                        || buttonPress?.DirectionOfTravel == DirectionOfTravel.UP))
-                                .OrderBy(buttonPress => buttonPress.FloorNumber)
-                                .FirstOrDefault();
-            var nextFloorDown = ButtonPresses
-                                .Where(buttonPress =>
-                                    buttonPress?.FloorNumber < CurrentFloor
-                                    && (buttonPress?.DirectionOfTravel == DirectionOfTravel.NONE
-                                        || buttonPress?.DirectionOfTravel == DirectionOfTravel.DOWN))
-                                .OrderByDescending(buttonPress => buttonPress.FloorNumber)
-                                .FirstOrDefault();
+            var nextFloorUp = GetNextFloorUp();
+            var nextFloorDown = GetNextFloorDown();
 
             if (nextFloorUp != null && DirectionOfTravel == DirectionOfTravel.UP)
             {
@@ -168,6 +156,26 @@
             {
                 ButtonPresses.RemoveAll(buttonPress => buttonPress.FloorNumber == CurrentFloor);
             }
+        }
+
+        private ButtonPress GetNextFloorUp()
+        {
+            return ButtonPresses.Where(buttonPress =>
+                                    buttonPress?.FloorNumber > CurrentFloor
+                                    && (buttonPress?.DirectionOfTravel == DirectionOfTravel.NONE
+                                        || buttonPress?.DirectionOfTravel == DirectionOfTravel.UP))
+                                .OrderBy(buttonPress => buttonPress.FloorNumber)
+                                .FirstOrDefault();
+        }
+
+        private ButtonPress GetNextFloorDown()
+        {
+            return ButtonPresses.Where(buttonPress =>
+                                    buttonPress?.FloorNumber < CurrentFloor
+                                    && (buttonPress?.DirectionOfTravel == DirectionOfTravel.NONE
+                                        || buttonPress?.DirectionOfTravel == DirectionOfTravel.DOWN))
+                                .OrderByDescending(buttonPress => buttonPress.FloorNumber)
+                                .FirstOrDefault();
         }
     }
 }
