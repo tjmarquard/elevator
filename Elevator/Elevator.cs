@@ -5,12 +5,21 @@
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using Serilog;
 
     public class Elevator
     {
+        private readonly ILogger logger;
+
         public Elevator(int numberOfFloors)
         {
-            Car = new Car(numberOfFloors);
+            logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            Car = new Car(numberOfFloors, Log.Logger);
             Floors = new List<Floor>();
             var floorNumbers = Enumerable.Range(1, numberOfFloors);
             foreach (var floorNumber in floorNumbers)
@@ -95,7 +104,6 @@
             Car.IsInService = true;
             while (Car.ButtonPresses.Count > 0)
             {
-                Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
                 Car.DestinationFloorAndDirection();
                 Car.SetNextFloor();
                 await Car.MoveToNextFloor();
@@ -123,11 +131,15 @@
             var floorNumber = GetEnteredFloorNumber(enteredValue);
             var directionOfTravel = GetEnteredDirectionOfTravel(enteredValue);
 
-            Car.ButtonPresses.Add(new ButtonPress
+            var buttonPress = new ButtonPress()
             {
                 FloorNumber = floorNumber,
                 DirectionOfTravel = directionOfTravel,
-            });
+            };
+
+            Log.Information($"button press: {buttonPress.FloorNumber}{buttonPress.DirectionOfTravel}");
+
+            Car.ButtonPresses.Add(buttonPress);
 
             ProcessButtonPresses();
         }

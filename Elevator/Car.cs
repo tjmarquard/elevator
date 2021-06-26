@@ -4,11 +4,15 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Serilog;
 
     public class Car
     {
-        public Car(int numberOfFloors)
+        private readonly ILogger logger;
+
+        public Car(int numberOfFloors, ILogger logger)
         {
+            this.logger = logger;
             ButtonPresses = new List<ButtonPress>();
             Floors = Enumerable.Range(1, numberOfFloors).ToList();
         }
@@ -47,8 +51,6 @@
 
         public async Task MoveToNextFloor()
         {
-            QuerySensor();
-
             IsMoving = true;
             await Task.Delay(3 * 1000);
             IsMoving = false;
@@ -57,14 +59,16 @@
             {
                 WaitAtCurrentFloor();
             }
-
-            QuerySensor();
+            else
+            {
+                logger.Information($"pass floor: {CurrentFloor}");
+            }
         }
 
         public void WaitAtCurrentFloor()
         {
+            logger.Information($"stopped at floor: {CurrentFloor}");
             RemoveFloorFromQueue();
-            Console.WriteLine("quick stop");
             System.Threading.Thread.Sleep(1 * 1000);
         }
 
@@ -135,23 +139,6 @@
         {
             ButtonPresses.RemoveAll(buttonPress => buttonPress.FloorNumber == CurrentFloor && buttonPress.DirectionOfTravel == DirectionOfTravel);
             ButtonPresses.RemoveAll(buttonPress => buttonPress.FloorNumber == CurrentFloor && buttonPress.DirectionOfTravel == DirectionOfTravel.NONE);
-        }
-
-        private void QuerySensor()
-        {
-            Console.WriteLine(DateTime.Now);
-            Console.WriteLine($"Current Direction: {DirectionOfTravel}");
-            if (IsMoving)
-            {
-                Console.WriteLine($"Next Floor: {DestinationFloor}");
-            }
-            else
-            {
-                Console.WriteLine($"Current Floor: {CurrentFloor}");
-            }
-
-            Console.WriteLine($"State: {State}");
-            Console.WriteLine($"Over weight limit: {IsOverMaxWeightLimit}");
         }
     }
 }
