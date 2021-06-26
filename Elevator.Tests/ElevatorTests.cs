@@ -10,7 +10,7 @@
             var subjectUnderTest = new Elevator(5);
 
             Assert.Collection<Floor>(
-                subjectUnderTest.Floors,
+                subjectUnderTest.FloorNumbers,
                 floor => Assert.Equal(1, floor.Number),
                 floor => Assert.Equal(2, floor.Number),
                 floor => Assert.Equal(3, floor.Number),
@@ -58,6 +58,37 @@
             var actualDirection = subjectUnderTest.GetEnteredDirectionOfTravel(enteredButton);
 
             Assert.Equal(expectedDirection, actualDirection);
+        }
+
+        [Fact]
+        public async void ProcessButtonPressesTest()
+        {
+            var subjectUnderTest = new Elevator(3);
+            var expectedLastFloor = 2;
+
+            var buttonPress2Down = new ButtonPress()
+            {
+                FloorNumber = 2,
+                DirectionOfTravel = DirectionOfTravel.DOWN,
+            };
+            var ButtonPress2Up = new ButtonPress()
+            {
+                FloorNumber = 2,
+                DirectionOfTravel = DirectionOfTravel.UP,
+            };
+            var buttonPress3None = new ButtonPress()
+            {
+                FloorNumber = 3,
+                DirectionOfTravel = DirectionOfTravel.NONE,
+            };
+
+            subjectUnderTest.Car.ButtonPresses.Add(buttonPress2Down);
+            subjectUnderTest.Car.ButtonPresses.Add(ButtonPress2Up);
+            subjectUnderTest.Car.ButtonPresses.Add(buttonPress3None);
+
+            await subjectUnderTest.ProcessButtonPresses();
+
+            Assert.Equal(expectedLastFloor, subjectUnderTest.Car.CurrentFloor);
         }
     }
 }

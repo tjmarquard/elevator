@@ -32,7 +32,14 @@
         {
             Console.WriteLine("How many floors does this elevator service?");
 
-            return Console.ReadLine();
+            var userEnteredValue = Console.ReadLine();
+
+            if (userEnteredValue.ToUpperInvariant() == "Q")
+            {
+                Environment.Exit(0);
+            }
+
+            return userEnteredValue;
         }
     }
 }

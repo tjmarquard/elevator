@@ -16,32 +16,26 @@
             logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
-                .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File("logs/elevator.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
-            Car = new Car(numberOfFloors, Log.Logger);
-            Floors = new List<Floor>();
-            var floorNumbers = Enumerable.Range(1, numberOfFloors);
-            foreach (var floorNumber in floorNumbers)
-            {
-                var floor = new Floor(floorNumber);
-                Floors.Add(floor);
-            }
+            Car = new Car(numberOfFloors, logger);
+            FloorNumbers = Enumerable.Range(1, numberOfFloors).ToList();
         }
 
         public Car Car { get; set; }
 
-        public List<Floor> Floors { get; set; }
+        public List<int> FloorNumbers { get; set; }
 
-        public int TopFloor
+        public bool QuitFlag { get; set; } = false;
+
+        private int TopFloor
         {
             get
             {
-                return Floors.Select(floor => floor.Number).Max();
+                return FloorNumbers.Select(floorNumber => floorNumber).Max();
             }
         }
-
-        public bool QuitFlag { get; set; } = false;
 
         public static int GetEnteredFloorNumber(string value)
         {
@@ -102,9 +96,11 @@
         public async Task ProcessButtonPresses()
         {
             Car.IsInService = true;
+
             while (Car.ButtonPresses.Count > 0)
             {
-                Car.DestinationFloorAndDirection();
+                Car.SetDestinationFloor();
+                Car.SetDirectionOfTravel();
                 Car.SetNextFloor();
                 await Car.MoveToNextFloor();
             }
@@ -112,24 +108,42 @@
             Car.IsInService = false;
         }
 
-        private static string PushButtonPrompt()
+        private async Task<string> PushButtonPrompt()
         {
             Console.WriteLine("Which button in the elevator car was pushed?");
-            return Console.ReadLine();
+            
+            var userEnteredValue = Console.ReadLine();
+
+            if (userEnteredValue.ToUpperInvariant() == "Q")
+            {
+                while (Car.ButtonPresses.Count != 0)
+                {
+                    await Task.Delay(25);
+                }
+
+                Environment.Exit(0);
+            }
+
+            return userEnteredValue;
         }
 
-        private void PushButtons()
+        private async void PushButtons()
         {
-            var enteredValue = PushButtonPrompt();
+            var enteredValue = await PushButtonPrompt();
 
             while (!CheckForValidButton(enteredValue))
             {
                 Console.WriteLine("An invalid value was entered");
-                enteredValue = PushButtonPrompt();
+                enteredValue = await PushButtonPrompt();
             }
 
             var floorNumber = GetEnteredFloorNumber(enteredValue);
             var directionOfTravel = GetEnteredDirectionOfTravel(enteredValue);
+
+            if (QuitFlag)
+            {
+                return;
+            }
 
             var buttonPress = new ButtonPress()
             {
@@ -137,11 +151,16 @@
                 DirectionOfTravel = directionOfTravel,
             };
 
-            Log.Information($"button press: {buttonPress.FloorNumber}{buttonPress.DirectionOfTravel}");
+            logger.Information($"button press: {buttonPress.FloorNumber} {buttonPress.DirectionOfTravel}");
 
             Car.ButtonPresses.Add(buttonPress);
 
-            ProcessButtonPresses();
+            if (!Car.IsInService)
+            {
+                ProcessButtonPresses();
+            }
+
+
         }
     }
 }

@@ -19,7 +19,13 @@
 
         public DirectionOfTravel DirectionOfTravel { get; set; } = DirectionOfTravel.NONE;
 
-        public bool IsMoving { get; set; } = false;
+        public bool IsMoving
+        {
+            get
+            {
+                return State == State.MOVING;
+            }
+        }
 
         public State State { get; set; } = State.STOPPED;
 
@@ -29,7 +35,7 @@
 
         public int CurrentFloor { get; set; } = 1;
 
-        public int DestinationFloor { get; set; } = 1;
+        public int DestinationFloor { get; set; }
 
         public int NextFloor { get; set; }
 
@@ -51,25 +57,34 @@
 
         public async Task MoveToNextFloor()
         {
-            IsMoving = true;
-            await Task.Delay(3 * 1000);
-            IsMoving = false;
-            CurrentFloor = NextFloor;
-            if (CurrentFloor == DestinationFloor)
-            {
-                WaitAtCurrentFloor();
-            }
-            else
-            {
-                logger.Information($"pass floor: {CurrentFloor}");
+            if (DestinationFloor != 0 && DestinationFloor != CurrentFloor) {
+                State = State.MOVING;
+                await Task.Delay(3 * 1000);
+                CurrentFloor = NextFloor;
+                if (CurrentFloor == DestinationFloor)
+                {
+                    WaitAtFloor();
+                }
+                else
+                {
+                    PassByFloor();
+                }
             }
         }
 
-        public void WaitAtCurrentFloor()
+        public void WaitAtFloor()
         {
             logger.Information($"stopped at floor: {CurrentFloor}");
+            SetDestinationFloor();
+            SetDirectionOfTravel();
             RemoveFloorFromQueue();
+            State = State.STOPPED;
             System.Threading.Thread.Sleep(1 * 1000);
+        }
+
+        public void PassByFloor()
+        {
+            logger.Information($"passed floor: {CurrentFloor}");
         }
 
         public void SetNextFloor()
@@ -88,27 +103,27 @@
             }
         }
 
-        public void DestinationFloorAndDirection()
+        public void SetDestinationFloor()
         {
             if (ButtonPresses.Count == 0)
             {
+                DestinationFloor = 0;
                 return;
             }
 
-            // Do I need to move up or down
             var nextFloorUp = ButtonPresses
                                 .Where(buttonPress =>
-                                    buttonPress.FloorNumber > CurrentFloor
-                                    && (buttonPress.DirectionOfTravel == DirectionOfTravel.NONE
-                                        || buttonPress.DirectionOfTravel == DirectionOfTravel.UP))
-                                .OrderBy(floor => floor)
+                                    buttonPress?.FloorNumber > CurrentFloor
+                                    && (buttonPress?.DirectionOfTravel == DirectionOfTravel.NONE
+                                        || buttonPress?.DirectionOfTravel == DirectionOfTravel.UP))
+                                .OrderBy(buttonPress => buttonPress.FloorNumber)
                                 .FirstOrDefault();
             var nextFloorDown = ButtonPresses
                                 .Where(buttonPress =>
-                                    buttonPress.FloorNumber < CurrentFloor
-                                    && (buttonPress.DirectionOfTravel == DirectionOfTravel.NONE
-                                        || buttonPress.DirectionOfTravel == DirectionOfTravel.DOWN))
-                                .OrderByDescending(floor => floor)
+                                    buttonPress?.FloorNumber < CurrentFloor
+                                    && (buttonPress?.DirectionOfTravel == DirectionOfTravel.NONE
+                                        || buttonPress?.DirectionOfTravel == DirectionOfTravel.DOWN))
+                                .OrderByDescending(buttonPress => buttonPress.FloorNumber)
                                 .FirstOrDefault();
 
             if (nextFloorUp != null && DirectionOfTravel == DirectionOfTravel.UP)
@@ -124,14 +139,26 @@
                 var minDistance = ButtonPresses.Min(buttonPress => Math.Abs(buttonPress.FloorNumber - CurrentFloor));
                 DestinationFloor = ButtonPresses.Select(buttonPress => buttonPress.FloorNumber)
                     .First(floorNumber => Math.Abs(floorNumber - CurrentFloor) == minDistance);
-                if (DestinationFloor > CurrentFloor)
-                {
-                    DirectionOfTravel = DirectionOfTravel.UP;
-                }
-                else
-                {
-                    DirectionOfTravel = DirectionOfTravel.DOWN;
-                }
+            }
+        }
+
+        public void SetDirectionOfTravel()
+        {
+            if (DestinationFloor == 0)
+            {
+                DirectionOfTravel = DirectionOfTravel.NONE;
+            }
+            else if (DestinationFloor > CurrentFloor)
+            {
+                DirectionOfTravel = DirectionOfTravel.UP;
+            }
+            else if (DestinationFloor < CurrentFloor)
+            {
+                DirectionOfTravel = DirectionOfTravel.DOWN;
+            }
+            else
+            {
+                DirectionOfTravel = DirectionOfTravel.NONE;
             }
         }
 
@@ -139,6 +166,10 @@
         {
             ButtonPresses.RemoveAll(buttonPress => buttonPress.FloorNumber == CurrentFloor && buttonPress.DirectionOfTravel == DirectionOfTravel);
             ButtonPresses.RemoveAll(buttonPress => buttonPress.FloorNumber == CurrentFloor && buttonPress.DirectionOfTravel == DirectionOfTravel.NONE);
+            if (DirectionOfTravel == DirectionOfTravel.NONE)
+            {
+                ButtonPresses.RemoveAll(buttonPress => buttonPress.FloorNumber == CurrentFloor);
+            }
         }
     }
 }
