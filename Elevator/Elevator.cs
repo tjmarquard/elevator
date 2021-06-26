@@ -5,14 +5,11 @@
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
-    using NLog;
 
     public class Elevator
     {
         public Elevator(int numberOfFloors)
         {
-            Logger = LogManager.GetLogger("*");
-            Logger.Info("Starting!");
             Car = new Car(numberOfFloors);
             Floors = new List<Floor>();
             var floorNumbers = Enumerable.Range(1, numberOfFloors);
@@ -37,15 +34,17 @@
 
         public bool QuitFlag { get; set; } = false;
 
-        private ILogger Logger { get; set; }
-
         public static int GetEnteredFloorNumber(string value)
         {
             var digits = Regex.Split(value, @"\D+");
             digits = digits.Where(digit => !string.IsNullOrEmpty(digit)).ToArray();
 
-            int.TryParse(digits.FirstOrDefault(), out int floorNumber);
-            return floorNumber;
+            if (int.TryParse(digits.FirstOrDefault(), out int floorNumber))
+            {
+                return floorNumber;
+            }
+
+            return 0;
         }
 
         public void Run()
@@ -97,7 +96,6 @@
             while (Car.ButtonPresses.Count > 0)
             {
                 Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
-                Logger.Info("hello");
                 Car.DestinationFloorAndDirection();
                 Car.SetNextFloor();
                 await Car.MoveToNextFloor();
