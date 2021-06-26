@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-
-namespace Elevator.Tests
+﻿namespace Elevator.Tests
 {
+    using Xunit;
+
     public class ElevatorTests
     {
         [Fact]
@@ -14,16 +9,15 @@ namespace Elevator.Tests
         {
             var subjectUnderTest = new Elevator(5);
 
-            Assert.Collection<Floor>(subjectUnderTest.Floors,
-                floor => Assert.Equal(1, floor.Number),
-                floor => Assert.Equal(2, floor.Number),
-                floor => Assert.Equal(3, floor.Number),
-                floor => Assert.Equal(4, floor.Number),
-                floor => Assert.Equal(5, floor.Number)
-            );
-
+            Assert.Collection<int>(
+                subjectUnderTest.FloorNumbers,
+                floorNumber => Assert.Equal(1, floorNumber),
+                floorNumber => Assert.Equal(2, floorNumber),
+                floorNumber => Assert.Equal(3, floorNumber),
+                floorNumber => Assert.Equal(4, floorNumber),
+                floorNumber => Assert.Equal(5, floorNumber));
         }
-        
+
         [Theory]
         [InlineData("4D", 4)]
         [InlineData("4U", 4)]
@@ -36,22 +30,20 @@ namespace Elevator.Tests
         [InlineData("D3", 3)]
         public void GetEnteredFloorNumberShouldBeValid(string enteredButton, int expectedFloorNumber)
         {
-            var subjectUnderTest = new Elevator(5);
-            var actualFloorNumber = subjectUnderTest.GetEnteredFloorNumber(enteredButton);
+            var actualFloorNumber = Elevator.GetEnteredFloorNumber(enteredButton);
 
             Assert.Equal(expectedFloorNumber, actualFloorNumber);
-        }        
+        }
 
         [Theory]
         [InlineData("D", 0)]
         public void GetEnteredFloorNumberShouldBeInvalid(string enteredButton, int expectedFloorNumber)
         {
-            var subjectUnderTest = new Elevator(5);
-            var actualFloorNumber = subjectUnderTest.GetEnteredFloorNumber(enteredButton);
+            var actualFloorNumber = Elevator.GetEnteredFloorNumber(enteredButton);
 
             Assert.Equal(expectedFloorNumber, actualFloorNumber);
-        }       
-        
+        }
+
         [Theory]
         [InlineData("5D", DirectionOfTravel.DOWN)]
         [InlineData("4U", DirectionOfTravel.UP)]
@@ -64,6 +56,37 @@ namespace Elevator.Tests
             var actualDirection = subjectUnderTest.GetEnteredDirectionOfTravel(enteredButton);
 
             Assert.Equal(expectedDirection, actualDirection);
+        }
+
+        [Fact]
+        public async void ProcessButtonPressesTest()
+        {
+            var subjectUnderTest = new Elevator(3);
+            var expectedLastFloor = 2;
+
+            var buttonPress2Down = new ButtonPress()
+            {
+                FloorNumber = 2,
+                DirectionOfTravel = DirectionOfTravel.DOWN,
+            };
+            var buttonPress2Up = new ButtonPress()
+            {
+                FloorNumber = 2,
+                DirectionOfTravel = DirectionOfTravel.UP,
+            };
+            var buttonPress3None = new ButtonPress()
+            {
+                FloorNumber = 3,
+                DirectionOfTravel = DirectionOfTravel.NONE,
+            };
+
+            subjectUnderTest.Car.ButtonPresses.Add(buttonPress2Down);
+            subjectUnderTest.Car.ButtonPresses.Add(buttonPress2Up);
+            subjectUnderTest.Car.ButtonPresses.Add(buttonPress3None);
+
+            await subjectUnderTest.ProcessButtonPresses();
+
+            Assert.Equal(expectedLastFloor, subjectUnderTest.Car.CurrentFloor);
         }
     }
 }

@@ -1,38 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-
-namespace Elevator
+﻿namespace Elevator
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+    using Serilog;
+
     public class Elevator
     {
-        public Car Car { get; set; }
-        public List<Floor> Floors { get; set; }
-
-        public int TopFloor
-        {
-            get
-            {
-                return Floors.Select(floor => floor.Number).Max();
-            }
-        }
-        public bool QuitFlag { get; set; } = false;
+        private readonly ILogger logger;
 
         public Elevator(int numberOfFloors)
         {
-            Car = new Car(numberOfFloors);
-            Floors = new List<Floor>();
-            var floorNumbers = Enumerable.Range(1, numberOfFloors);
-            foreach(var floorNumber in floorNumbers)
+            logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.File("logs/elevator.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            Car = new Car(logger);
+            FloorNumbers = Enumerable.Range(1, numberOfFloors).ToList();
+        }
+
+        public Car Car { get; set; }
+
+        public List<int> FloorNumbers { get; set; }
+
+        public bool QuitFlag { get; set; } = false;
+
+        private int TopFloor
+        {
+            get
             {
-                var floor = new Floor(floorNumber);
-                Floors.Add(floor);
+                return FloorNumbers.Select(floorNumber => floorNumber).Max();
             }
+        }
+
+        public static int GetEnteredFloorNumber(string value)
+        {
+            var digits = Regex.Split(value, @"\D+");
+            digits = digits.Where(digit => !string.IsNullOrEmpty(digit)).ToArray();
+
+            if (int.TryParse(digits.FirstOrDefault(), out int floorNumber))
+            {
+                return floorNumber;
+            }
+
+            return 0;
         }
 
         public void Run()
@@ -41,28 +56,6 @@ namespace Elevator
             {
                 PushButtons();
             }
-        }
-
-        private void PushButtons()
-        {
-            var enteredValue = PushButtonPrompt();
-
-            while (!CheckForValidButton(enteredValue))
-            {
-                Console.WriteLine("An invalid value was entered");
-                enteredValue = PushButtonPrompt();
-            }
-
-            var floorNumber = GetEnteredFloorNumber(enteredValue);
-            var directionOfTravel = GetEnteredDirectionOfTravel(enteredValue);
-
-            Car.FloorQueue.Add((floorNumber, directionOfTravel));
-        }
-
-        private string PushButtonPrompt()
-        {
-            Console.WriteLine("Which button in the elevator car was pushed?");
-            return Console.ReadLine();
         }
 
         public bool CheckForValidButton(string value)
@@ -77,19 +70,9 @@ namespace Elevator
             return true;
         }
 
-        public int GetEnteredFloorNumber(string value)
-        {
-            var digits = Regex.Split(value, @"\D+");
-            digits = digits.Where(digit => !string.IsNullOrEmpty(digit)).ToArray();
-
-            Int32.TryParse(digits.FirstOrDefault(), out int floorNumber);
-            return floorNumber;
-        }
-
         public DirectionOfTravel GetEnteredDirectionOfTravel(string value)
         {
-            var validChars = Regex.Replace(value.ToUpperInvariant(), @"[^ UDQ]", String.Empty);
-
+            var validChars = Regex.Replace(value.ToUpperInvariant(), @"[^ UDQ]", string.Empty);
 
             if (validChars.Length == 0)
             {
@@ -107,6 +90,74 @@ namespace Elevator
                     return DirectionOfTravel.NONE;
                 default:
                     return DirectionOfTravel.NONE;
+            }
+        }
+
+        public async Task ProcessButtonPresses()
+        {
+            Car.IsInService = true;
+
+            while (Car.ButtonPresses.Count > 0)
+            {
+                Car.SetDestinationFloor();
+                Car.SetDirectionOfTravel();
+                Car.SetNextFloor();
+                await Car.MoveToNextFloor();
+            }
+
+            Car.IsInService = false;
+        }
+
+        private async Task<string> PushButtonPrompt()
+        {
+            Console.WriteLine("Which button in the elevator car was pushed?");
+
+            var userEnteredValue = Console.ReadLine();
+
+            if (userEnteredValue.ToUpperInvariant() == "Q")
+            {
+                while (Car.ButtonPresses.Count != 0)
+                {
+                    await Task.Delay(25);
+                }
+
+                Environment.Exit(0);
+            }
+
+            return userEnteredValue;
+        }
+
+        private async void PushButtons()
+        {
+            var enteredValue = await PushButtonPrompt();
+
+            while (!CheckForValidButton(enteredValue))
+            {
+                Console.WriteLine("An invalid value was entered");
+                enteredValue = await PushButtonPrompt();
+            }
+
+            var floorNumber = GetEnteredFloorNumber(enteredValue);
+            var directionOfTravel = GetEnteredDirectionOfTravel(enteredValue);
+
+            if (QuitFlag)
+            {
+                return;
+            }
+
+            var buttonPress = new ButtonPress()
+            {
+                FloorNumber = floorNumber,
+                DirectionOfTravel = directionOfTravel,
+            };
+
+            logger.Information($"button press: {buttonPress.FloorNumber} {buttonPress.DirectionOfTravel}");
+
+            Car.ButtonPresses.Add(buttonPress);
+
+            if (!Car.IsInService)
+            {
+                ProcessButtonPresses();
             }
         }
     }
