@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-
-namespace Elevator.Tests
+﻿namespace Elevator.Tests
 {
+    using Xunit;
+
     public class ElevatorTests
     {
         [Fact]
@@ -14,16 +9,15 @@ namespace Elevator.Tests
         {
             var subjectUnderTest = new Elevator(5);
 
-            Assert.Collection<Floor>(subjectUnderTest.Floors,
+            Assert.Collection<Floor>(
+                subjectUnderTest.Floors,
                 floor => Assert.Equal(1, floor.Number),
                 floor => Assert.Equal(2, floor.Number),
                 floor => Assert.Equal(3, floor.Number),
                 floor => Assert.Equal(4, floor.Number),
-                floor => Assert.Equal(5, floor.Number)
-            );
-
+                floor => Assert.Equal(5, floor.Number));
         }
-        
+
         [Theory]
         [InlineData("4D", 4)]
         [InlineData("4U", 4)]
@@ -37,21 +31,21 @@ namespace Elevator.Tests
         public void GetEnteredFloorNumberShouldBeValid(string enteredButton, int expectedFloorNumber)
         {
             var subjectUnderTest = new Elevator(5);
-            var actualFloorNumber = subjectUnderTest.GetEnteredFloorNumber(enteredButton);
+            var actualFloorNumber = Elevator.GetEnteredFloorNumber(enteredButton);
 
             Assert.Equal(expectedFloorNumber, actualFloorNumber);
-        }        
+        }
 
         [Theory]
         [InlineData("D", 0)]
         public void GetEnteredFloorNumberShouldBeInvalid(string enteredButton, int expectedFloorNumber)
         {
             var subjectUnderTest = new Elevator(5);
-            var actualFloorNumber = subjectUnderTest.GetEnteredFloorNumber(enteredButton);
+            var actualFloorNumber = Elevator.GetEnteredFloorNumber(enteredButton);
 
             Assert.Equal(expectedFloorNumber, actualFloorNumber);
-        }       
-        
+        }
+
         [Theory]
         [InlineData("5D", DirectionOfTravel.DOWN)]
         [InlineData("4U", DirectionOfTravel.UP)]

@@ -1,13 +1,12 @@
-﻿using System;
-
-namespace Elevator
+﻿namespace Elevator
 {
-    class Program
+    using System;
+
+    internal class Program
     {
-        
-        static void Main(string[] args)
+        private static void Main()
         {
-            var numberOfFloors= EnterHowManyFloors();
+            var numberOfFloors = EnterHowManyFloors();
             var elevator = new Elevator(numberOfFloors);
             elevator.Run();
 
@@ -20,7 +19,7 @@ namespace Elevator
 
             int numberOfFloors;
 
-            while (!Int32.TryParse(userEnteredValue, out numberOfFloors))
+            while (!int.TryParse(userEnteredValue, out numberOfFloors))
             {
                 Console.WriteLine("An invalid value was entered");
                 userEnteredValue = PromptHowManyFloors();

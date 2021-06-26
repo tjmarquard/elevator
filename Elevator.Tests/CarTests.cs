@@ -1,8 +1,7 @@
-using System;
-using Xunit;
-
 namespace Elevator.Test
 {
+    using Xunit;
+
     public class CarTests
     {
         [Fact]
@@ -27,13 +26,13 @@ namespace Elevator.Test
         {
             var subjectUnderTest = new Car(5);
 
-            Assert.Collection<int>(subjectUnderTest.Floors, 
+            Assert.Collection<int>(
+                subjectUnderTest.Floors,
                 floor => Assert.Equal(1, floor),
                 floor => Assert.Equal(2, floor),
                 floor => Assert.Equal(3, floor),
                 floor => Assert.Equal(4, floor),
-                floor => Assert.Equal(5, floor)
-                );
+                floor => Assert.Equal(5, floor));
         }
 
         [Fact]

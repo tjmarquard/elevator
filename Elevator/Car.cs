@@ -1,56 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Elevator
+﻿namespace Elevator
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
     public class Car
     {
-        public DirectionOfTravel DirectionOfTravel { get; set; } = DirectionOfTravel.NONE;
-        public bool IsMoving { get; set; } = false;
-        public State State { get; set; } = State.STOPPED;
-        public bool IsInService { get; set; } = false;
-        public List<int> Floors { get; private set; }
-        public int CurrentFloor { get; set; } = 1;
-        public int DestinationFloor { get; set; } = 1;
-        public int NextFloor { get; set; }
-        public int MaxWeightLimit { get; } = 2000;
-        public int Weight { get; set; }
-        public bool IsUnderMaxWeightLimit
-        {
-            get => Weight <= MaxWeightLimit;
-        }        
-        public bool IsOverMaxWeightLimit
-        {
-            get => Weight > MaxWeightLimit;
-        }
-        public List<ButtonPress> ButtonPresses { get; set; }
-
         public Car(int numberOfFloors)
         {
             ButtonPresses = new List<ButtonPress>();
             Floors = Enumerable.Range(1, numberOfFloors).ToList();
         }
 
-        private void QuerySensor()
+        public DirectionOfTravel DirectionOfTravel { get; set; } = DirectionOfTravel.NONE;
+
+        public bool IsMoving { get; set; } = false;
+
+        public State State { get; set; } = State.STOPPED;
+
+        public bool IsInService { get; set; } = false;
+
+        public List<int> Floors { get; private set; }
+
+        public int CurrentFloor { get; set; } = 1;
+
+        public int DestinationFloor { get; set; } = 1;
+
+        public int NextFloor { get; set; }
+
+        public int MaxWeightLimit { get; } = 2000;
+
+        public int Weight { get; set; }
+
+        public bool IsUnderMaxWeightLimit
         {
-            Console.WriteLine(DateTime.Now);
-            Console.WriteLine($"Current Direction: {DirectionOfTravel}");
-            if (IsMoving)
-            {
-                Console.WriteLine($"Next Floor: {DestinationFloor}");
-            }
-            else
-            {
-                Console.WriteLine($"Current Floor: {CurrentFloor}");
-            }
-            Console.WriteLine($"State: {State}");
-            Console.WriteLine($"Over weight limit: {IsOverMaxWeightLimit}");
+            get => Weight <= MaxWeightLimit;
         }
+
+        public bool IsOverMaxWeightLimit
+        {
+            get => Weight > MaxWeightLimit;
+        }
+
+        public List<ButtonPress> ButtonPresses { get; set; }
 
         public async Task MoveToNextFloor()
         {
@@ -98,9 +91,9 @@ namespace Elevator
                 return;
             }
 
-            //Do I need to move up or down
+            // Do I need to move up or down
             var nextFloorUp = ButtonPresses
-                                .Where(buttonPress => 
+                                .Where(buttonPress =>
                                     buttonPress.FloorNumber > CurrentFloor
                                     && (buttonPress.DirectionOfTravel == DirectionOfTravel.NONE
                                         || buttonPress.DirectionOfTravel == DirectionOfTravel.UP))
@@ -113,7 +106,6 @@ namespace Elevator
                                         || buttonPress.DirectionOfTravel == DirectionOfTravel.DOWN))
                                 .OrderByDescending(floor => floor)
                                 .FirstOrDefault();
-
 
             if (nextFloorUp != null && DirectionOfTravel == DirectionOfTravel.UP)
             {
@@ -143,6 +135,23 @@ namespace Elevator
         {
             ButtonPresses.RemoveAll(buttonPress => buttonPress.FloorNumber == CurrentFloor && buttonPress.DirectionOfTravel == DirectionOfTravel);
             ButtonPresses.RemoveAll(buttonPress => buttonPress.FloorNumber == CurrentFloor && buttonPress.DirectionOfTravel == DirectionOfTravel.NONE);
+        }
+
+        private void QuerySensor()
+        {
+            Console.WriteLine(DateTime.Now);
+            Console.WriteLine($"Current Direction: {DirectionOfTravel}");
+            if (IsMoving)
+            {
+                Console.WriteLine($"Next Floor: {DestinationFloor}");
+            }
+            else
+            {
+                Console.WriteLine($"Current Floor: {CurrentFloor}");
+            }
+
+            Console.WriteLine($"State: {State}");
+            Console.WriteLine($"Over weight limit: {IsOverMaxWeightLimit}");
         }
     }
 }
