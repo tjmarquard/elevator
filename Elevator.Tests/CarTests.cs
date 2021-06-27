@@ -54,43 +54,42 @@ namespace Elevator.Tests
         }
 
         [Fact]
-        public void CarIsUnderMaxWeightLimit()
+        public void WhenUnderMaxWeightLimitShouldReturnFalse()
         {
             var subjectUnderTest = new Car(logger);
 
             subjectUnderTest.Weight = subjectUnderTest.MaxWeightLimit - 1;
 
-            Assert.True(subjectUnderTest.IsUnderMaxWeightLimit);
             Assert.False(subjectUnderTest.IsOverMaxWeightLimit);
         }
 
         [Fact]
-        public void CarIsOverMaxWeightLimit()
+        public void WhenOverMaxWeightLimitShouldReturnTrue()
         {
             var subjectUnderTest = new Car(logger);
 
             subjectUnderTest.Weight = subjectUnderTest.MaxWeightLimit + 1;
 
-            Assert.False(subjectUnderTest.IsUnderMaxWeightLimit);
             Assert.True(subjectUnderTest.IsOverMaxWeightLimit);
         }
 
         [Fact]
-        public void CarIsAtMaxWeightLimit()
+        public void WhenAtMaxWeightLimitShouldReturnFalse()
         {
             var subjectUnderTest = new Car(logger);
 
             subjectUnderTest.Weight = subjectUnderTest.MaxWeightLimit;
 
-            Assert.True(subjectUnderTest.IsUnderMaxWeightLimit);
             Assert.False(subjectUnderTest.IsOverMaxWeightLimit);
         }
 
         [Fact]
         public void DirectionOfTravelShouldBeUpWhenDestinationIsAboveCurrent()
         {
-            var subjectUnderTest = new Car(logger);
-            subjectUnderTest.CurrentFloor = chance.Integer(1);
+            var subjectUnderTest = new Car(logger)
+            {
+                CurrentFloor = chance.Integer(1),
+            };
             subjectUnderTest.DestinationFloor = subjectUnderTest.CurrentFloor + 1;
             subjectUnderTest.SetDirectionOfTravel();
             Assert.Equal(DirectionOfTravel.UP, subjectUnderTest.DirectionOfTravel);
@@ -99,8 +98,10 @@ namespace Elevator.Tests
         [Fact]
         public void DirectionOfTravelShouldBeDownWhenDestinationIsBelowCurrent()
         {
-            var subjectUnderTest = new Car(logger);
-            subjectUnderTest.CurrentFloor = chance.Integer(2);
+            var subjectUnderTest = new Car(logger)
+            {
+                CurrentFloor = chance.Integer(2),
+            };
             subjectUnderTest.DestinationFloor = subjectUnderTest.CurrentFloor - 1;
             subjectUnderTest.SetDirectionOfTravel();
             Assert.Equal(DirectionOfTravel.DOWN, subjectUnderTest.DirectionOfTravel);
@@ -109,8 +110,10 @@ namespace Elevator.Tests
         [Fact]
         public void DirectionOfTravelShouldBeNoneWhenDestinationTheSameAsCurrent()
         {
-            var subjectUnderTest = new Car(logger);
-            subjectUnderTest.CurrentFloor = chance.Integer(1);
+            var subjectUnderTest = new Car(logger)
+            {
+                CurrentFloor = chance.Integer(1),
+            };
             subjectUnderTest.DestinationFloor = subjectUnderTest.CurrentFloor;
             subjectUnderTest.SetDirectionOfTravel();
             Assert.Equal(DirectionOfTravel.NONE, subjectUnderTest.DirectionOfTravel);
@@ -119,9 +122,11 @@ namespace Elevator.Tests
         [Fact]
         public void DirectionOfTravelShouldBeNoneWhenDestinationIsZero()
         {
-            var subjectUnderTest = new Car(logger);
-            subjectUnderTest.CurrentFloor = chance.Integer(1);
-            subjectUnderTest.DestinationFloor = 0;
+            var subjectUnderTest = new Car(logger)
+            {
+                CurrentFloor = chance.Integer(1),
+                DestinationFloor = 0,
+            };
             subjectUnderTest.SetDirectionOfTravel();
             Assert.Equal(DirectionOfTravel.NONE, subjectUnderTest.DirectionOfTravel);
         }
@@ -199,9 +204,11 @@ namespace Elevator.Tests
         [Fact]
         public void DestinationFloorShouldBeFloorAboveWhenFloorsOnBothSidesArePickedAndGoingUp()
         {
-            var subjectUnderTest = new Car(logger);
-            subjectUnderTest.CurrentFloor = 2;
-            subjectUnderTest.DirectionOfTravel = DirectionOfTravel.UP;
+            var subjectUnderTest = new Car(logger)
+            {
+                CurrentFloor = 2,
+                DirectionOfTravel = DirectionOfTravel.UP,
+            };
 
             var buttonPress3 = new ButtonPress()
             {
@@ -225,9 +232,11 @@ namespace Elevator.Tests
         [Fact]
         public void DestinationFloorShouldBeFloorBelowWhenFloorsOnBothSidesArePickedAndGoingDown()
         {
-            var subjectUnderTest = new Car(logger);
-            subjectUnderTest.CurrentFloor = 2;
-            subjectUnderTest.DirectionOfTravel = DirectionOfTravel.DOWN;
+            var subjectUnderTest = new Car(logger)
+            {
+                CurrentFloor = 2,
+                DirectionOfTravel = DirectionOfTravel.DOWN,
+            };
 
             var buttonPress3 = new ButtonPress()
             {

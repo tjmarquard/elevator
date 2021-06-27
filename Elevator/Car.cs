@@ -40,11 +40,6 @@
 
         public int Weight { get; set; }
 
-        public bool IsUnderMaxWeightLimit
-        {
-            get => Weight <= MaxWeightLimit;
-        }
-
         public bool IsOverMaxWeightLimit
         {
             get => Weight > MaxWeightLimit;

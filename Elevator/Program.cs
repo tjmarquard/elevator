@@ -1,6 +1,7 @@
 ﻿namespace Elevator
 {
     using System;
+    using System.Threading.Tasks;
 
     internal class Program
     {
@@ -9,6 +10,11 @@
             var numberOfFloors = EnterHowManyFloors();
             var elevator = new Elevator(numberOfFloors);
             elevator.Run();
+
+            while (elevator.Car.ButtonPresses.Count > 0)
+            {
+                Task.Delay(25);
+            }
         }
 
         private static int EnterHowManyFloors()

@@ -118,6 +118,7 @@
 
             if (userEnteredValue.ToUpperInvariant() == "Q")
             {
+                QuitFlag = true;
                 while (Car.ButtonPresses.Count != 0)
                 {
                     await Task.Delay(25);
