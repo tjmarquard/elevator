@@ -59,7 +59,7 @@
                 PushButtons();
             }
 
-            logger.Information("stopped running the elevator");
+            logger.Information("elevator is stopping");
         }
 
         public bool CheckForValidButton(string value)
