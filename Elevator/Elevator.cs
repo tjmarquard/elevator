@@ -58,6 +58,8 @@
             {
                 PushButtons();
             }
+
+            logger.Information("stopped running the elevator");
         }
 
         public bool CheckForValidButton(string value)
